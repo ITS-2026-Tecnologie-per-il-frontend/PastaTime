@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Product } from "../types";
-import ScanHistory from "../components/ScanHistory";
+import ScreenHistory from "../components/ScreenHistory";
 import BarcodeScanner from "../components/BarcodeScanner";
 
 interface HomeScreenProps {
@@ -15,7 +15,7 @@ export default function HomeScreen({ history, onScanned }: HomeScreenProps) {
     <main className="home">
       <h1>Pasta Timer</h1>
 
-      <ScanHistory items={history} onSelect={onScanned} />
+      <ScreenHistory items={history} onSelect={onScanned} />
 
       <button className="scan-btn" onClick={() => setScanning(true)}>
         Scansiona codice a barre
