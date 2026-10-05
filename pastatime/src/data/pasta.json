@@ -1,0 +1,12 @@
+[
+    {
+        "ID": 1,
+        "codebar": "8012345678901",
+        "system_code": "PST-000001",
+        "description": "Spaghetti 500g",
+        "extended_description": "Spaghetti di semola di grano duro, formato 500g, marca Barilla. Tempo di cottura consigliato: 8 minuti.",
+        "brand": "Barilla",
+        "cooking_time": 480,
+        "last_used": null
+    }
+]
