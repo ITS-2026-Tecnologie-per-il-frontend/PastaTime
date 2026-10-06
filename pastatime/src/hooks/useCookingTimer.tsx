@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TimerStatus } from "../types";
 
+// Applica la modifica manuale senza mai portare il timer sotto lo 0.
+// Se il tempo è già scaduto (overtime), il tasto "-" non ha effetto.
+function applyDelta(currentMs: number, deltaMs: number): number {
+  if (deltaMs >= 0) return currentMs + deltaMs;
+  if (currentMs <= 0) return currentMs;
+  return Math.max(0, currentMs + deltaMs);
+}
+
 export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pasta-pronta.wav`) {
   const [remainingMs, setRemainingMs] = useState<number>(0);
   const [status, setStatus] = useState<TimerStatus>("idle");
@@ -75,11 +83,14 @@ export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pas
 
   const adjust = useCallback(
     (deltaSeconds: number) => {
+      const deltaMs = deltaSeconds * 1000;
       if (status === "running") {
-        endAtRef.current += deltaSeconds * 1000;
-        setRemainingMs(endAtRef.current - Date.now());
+        const now = Date.now();
+        const next = applyDelta(endAtRef.current - now, deltaMs);
+        endAtRef.current = now + next;
+        setRemainingMs(next);
       } else {
-        setRemainingMs((ms) => ms + deltaSeconds * 1000);
+        setRemainingMs((ms) => applyDelta(ms, deltaMs));
       }
     },
     [status]
