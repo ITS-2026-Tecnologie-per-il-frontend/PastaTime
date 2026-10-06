@@ -18,7 +18,7 @@ export default function HomeScreen({ history, onScanned }: HomeScreenProps) {
       <ScreenHistory items={history} onSelect={onScanned} />
 
       <button className="scan-btn" onClick={() => setScanning(true)}>
-        Scansiona codice a barre
+        Simula scansione codice a barre
       </button>
 
       {scanning && (
