@@ -4,6 +4,7 @@ import type { CookingMode, Product } from "../types";
 import TimerDisplay from "../components/TimerDisplay";
 import CookingModeSelector from "../components/CookingModeSelector";
 import DetailsPanel from "../components/DetailsPanel";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 // Placeholder da definire (potrebbero arrivare dal prodotto)
 const MODE_OFFSET: Record<CookingMode, number> = {
@@ -16,11 +17,14 @@ interface TimerScreenProps {
   product: Product;
   timer: CookingTimer;
   onDone: () => void;
+  /** Chiamata dopo la conferma: App resetta il timer e torna alla home. */
+  onExit: () => void;
 }
 
-export default function TimerScreen({ product, timer, onDone }: TimerScreenProps) {
+export default function TimerScreen({ product, timer, onDone, onExit }: TimerScreenProps) {
   const [mode, setMode] = useState<CookingMode>("normal");
   const [showDetails, setShowDetails] = useState<boolean>(false);
+  const [confirmExit, setConfirmExit] = useState<boolean>(false);
   const { remainingMs, status, isRinging, audioError, retryAlarm, start, stop, adjust, reset } = timer;
   const running = status === "running";
 
@@ -31,6 +35,10 @@ export default function TimerScreen({ product, timer, onDone }: TimerScreenProps
 
   return (
     <main className="timer-screen">
+      <button className="back-btn" onClick={() => setConfirmExit(true)}>
+        ← Home
+      </button>
+
       <h2>{product.name}</h2>
 
       <TimerDisplay remainingMs={remainingMs} isRinging={isRinging} />
@@ -69,6 +77,17 @@ export default function TimerScreen({ product, timer, onDone }: TimerScreenProps
       </button>
 
       <DetailsPanel id="product-details" product={product} open={showDetails} />
+
+      {confirmExit && (
+        <ConfirmDialog
+          title="Tornare alla home?"
+          message="Il timer verrà azzerato e perderai il tempo trascorso."
+          confirmLabel="Torna alla home"
+          cancelLabel="Resta qui"
+          onConfirm={onExit}
+          onCancel={() => setConfirmExit(false)}
+        />
+      )}
     </main>
   );
 }

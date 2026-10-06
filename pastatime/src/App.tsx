@@ -135,6 +135,17 @@ export default function App() {
   };
 
   // ───────────────────────────────────────────────────────────
+  // HANDLER: uscita dal timer verso la home (dopo conferma)
+  // ───────────────────────────────────────────────────────────
+  // Riporta il timer al valore di default del prodotto: `reset` ferma
+  // anche conteggio e allarme, quindi nulla continua in background.
+  // Riaprendo il prodotto dalla cronologia, `handleScanned` riparte da qui.
+  const handleExitToHome = () => {
+    if (product) timer.reset(product.cookingSeconds);
+    setScreen("home");
+  };
+
+  // ───────────────────────────────────────────────────────────
   // HANDLER: scelta del feedback
   // ───────────────────────────────────────────────────────────
   // Chiamato da FeedbackModal quando l'utente seleziona un voto
@@ -209,6 +220,7 @@ export default function App() {
           product={product}
           timer={timer}
           onDone={handleDone}
+          onExit={handleExitToHome}
         />
       )}
 
