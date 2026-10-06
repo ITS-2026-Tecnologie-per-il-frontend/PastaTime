@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { PastaRecord } from '../src/types/pasta';
+import type { PastaRecord } from '../types/pasta';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +54,6 @@ for (let i = 1; i <= 100; i++) {
     });
 }
 
-const outPath = path.resolve(__dirname, '../src/data/pasta.json');
+const outPath = path.resolve(__dirname, '../data/pasta.json');
 fs.writeFileSync(outPath, JSON.stringify(records, null, 2));
 console.log(`pasta.json generato: ${records.length} record → ${outPath}`);
