@@ -7,11 +7,10 @@ import { useState } from "react";
 import { useCookingTimer } from "./hooks/useCookingTimer";
 import type { FeedbackValue, Product, Screen } from "./types";
 
-// Componenti delle tre schermate principali dell'app.
+// Componenti delle due schermate principali dell'app.
 // Ogni schermata è un componente separato: App fa da "router" manuale.
 import HomeScreen from "./screens/HomeScreen";
 import TimerScreen from "./screens/TimerScreen";
-import DetailsScreen from "./screens/DetailsScreen";
 
 // Modale di feedback mostrata a fine cottura.
 // Componente separato perché ha vita propria (mostrata/nascosta via boolean).
@@ -34,7 +33,7 @@ const MAX_HISTORY = 10;
 
 export default function App() {
   // ── STATO 1: schermata corrente ─────────────────────────────
-  // `screen` è una macchina a stati semplice: 'home' | 'timer' | 'details'.
+  // `screen` è una macchina a stati semplice: 'home' | 'timer'.
   // Inizializzata a 'home': l'app parte sempre dalla schermata iniziale.
   // Il tipo `Screen` (importato) garantisce che non si possano assegnare
   // valori non previsti (typo, stringhe arbitrarie, ecc.).
@@ -43,7 +42,7 @@ export default function App() {
   // ── STATO 2: prodotto corrente ──────────────────────────────
   // `product` contiene i dati del prodotto scansionato attualmente "attivo".
   // È `Product | null` perché all'avvio non c'è nessun prodotto.
-  // Viene popolato in `handleScanned` e usato da TimerScreen e DetailsScreen.
+  // Viene popolato in `handleScanned` e usato da TimerScreen (che mostra i dettagli in un pannello al suo interno).
   const [product, setProduct] = useState<Product | null>(null);
 
   // ── STATO 3: cronologia dei prodotti scansionati ────────────
@@ -80,7 +79,7 @@ export default function App() {
   //   4. passare alla schermata 'timer'
   const handleScanned = (scanned: Product) => {
     // 1. Imposta il prodotto corrente.
-    //    Da questo momento TimerScreen e DetailsScreen hanno i dati da mostrare.
+    //    Da questo momento TimerScreen (e il suo pannello dei dettagli) hanno i dati da mostrare.
     setProduct(scanned);
 
     // 2. Aggiorna la cronologia con una funzione updater.
@@ -162,7 +161,7 @@ export default function App() {
 
     // Torna alla home. Da qui l'utente può scansionare un nuovo prodotto.
     // Nota: `product` NON viene azzerato. Questo significa che se l'utente
-    // in futuro tornasse a 'timer' o 'details' senza un nuovo scan, vedrebbe
+    // in futuro tornasse a 'timer' senza un nuovo scan, vedrebbe
     // ancora l'ultimo prodotto. Se questo non è desiderato, andrebbe fatto
     // `setProduct(null)` qui.
     setScreen("home");
@@ -203,28 +202,14 @@ export default function App() {
             - product: i dati del prodotto corrente
             - timer: l'oggetto hook del timer
             - onDone: callback per fine cottura / stop manuale
-            - onDetails: callback per passare alla schermata dettagli */}
+            I dettagli non passano da qui: li gestisce TimerScreen
+            con un pannello (DetailsPanel) che si apre e si chiude da solo. */}
       {screen === "timer" && product && (
         <TimerScreen
           product={product}
           timer={timer}
           onDone={handleDone}
-          onDetails={() => setScreen("details")}
         />
-      )}
-
-      {/* ── SCHERMATA DETTAGLI ──────────────────────────────
-          Stessa doppia condizione della schermata timer.
-          Riceve:
-            - product: i dati da mostrare in dettaglio
-            - onBack: torna alla schermata 'timer' (non 'home').
-              Il ritorno a 'timer' ha senso perché i dettagli sono
-              "figli" del timer: l'utente va a vedere i dettagli e
-              poi torna al timer ancora in corso (o fermo).
-          Nota: la modale di feedback può apparire ANCHE sopra questa
-          schermata, perché il blocco è indipendente dallo `screen`. */}
-      {screen === "details" && product && (
-        <DetailsScreen product={product} onBack={() => setScreen("timer")} />
       )}
 
       {/* ── MODALE FEEDBACK (overlay) ───────────────────────

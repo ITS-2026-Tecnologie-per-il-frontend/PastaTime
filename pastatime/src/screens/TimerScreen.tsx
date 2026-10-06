@@ -3,6 +3,7 @@ import type { CookingTimer } from "../hooks/useCookingTimer";
 import type { CookingMode, Product } from "../types";
 import TimerDisplay from "../components/TimerDisplay";
 import CookingModeSelector from "../components/CookingModeSelector";
+import DetailsPanel from "../components/DetailsPanel";
 
 // Placeholder da definire (potrebbero arrivare dal prodotto)
 const MODE_OFFSET: Record<CookingMode, number> = {
@@ -15,11 +16,11 @@ interface TimerScreenProps {
   product: Product;
   timer: CookingTimer;
   onDone: () => void;
-  onDetails: () => void;
 }
 
-export default function TimerScreen({ product, timer, onDone, onDetails }: TimerScreenProps) {
+export default function TimerScreen({ product, timer, onDone }: TimerScreenProps) {
   const [mode, setMode] = useState<CookingMode>("normal");
+  const [showDetails, setShowDetails] = useState<boolean>(false);
   const { remainingMs, status, isRinging, audioError, retryAlarm, start, stop, adjust, reset } = timer;
   const running = status === "running";
 
@@ -58,9 +59,16 @@ export default function TimerScreen({ product, timer, onDone, onDetails }: Timer
         <button onClick={onDone}>Done</button>
       </div>
 
-      <button className="details-btn" onClick={onDetails}>
-        Details
+      <button
+        className="details-btn"
+        onClick={() => setShowDetails((v) => !v)}
+        aria-expanded={showDetails}
+        aria-controls="product-details"
+      >
+        {showDetails ? "Nascondi details" : "Details"}
       </button>
+
+      <DetailsPanel id="product-details" product={product} open={showDetails} />
     </main>
   );
 }
