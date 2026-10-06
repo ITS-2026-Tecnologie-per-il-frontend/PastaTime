@@ -14,10 +14,13 @@ export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pas
   const [status, setStatus] = useState<TimerStatus>("idle");
   const endAtRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const startAudioRef = useRef<HTMLAudioElement | null>(null);
   const [audioError, setAudioError] = useState(false);
+  const [startAudioError, setStartAudioError] = useState(false);
 
   useEffect(() => () => {
     audioRef.current?.pause();
+    startAudioRef.current?.pause();
   }, []);
 
   // Tick: ricalcola dal timestamp di fine, non decrementa un contatore
@@ -36,6 +39,7 @@ export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pas
     const audio = audioRef.current;
     if (!audio) return;
     if (isRinging) {
+      startAudioRef.current?.pause();
       audio.volume = 1;
       audio.play().then(() => setAudioError(false)).catch(() => setAudioError(true));
     } else {
@@ -46,12 +50,30 @@ export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pas
 
   const reset = useCallback((seconds: number) => {
     audioRef.current?.pause();
+    startAudioRef.current?.pause();
     setAudioError(false);
+    setStartAudioError(false);
     setStatus("idle");
     setRemainingMs(seconds * 1000);
   }, []);
 
   const start = useCallback(() => {
+    // Un breve suono conferma l'avvio (o la ripresa), senza ripetersi.
+    if (remainingMs > 0) {
+      if (!startAudioRef.current) {
+        startAudioRef.current = new Audio(`${import.meta.env.BASE_URL}audio/inizio-timer.wav`);
+        startAudioRef.current.volume = 0.7;
+      }
+      const startAudio = startAudioRef.current;
+      startAudio.currentTime = 0;
+      setStartAudioError(false);
+      startAudio.play().catch((error: unknown) => {
+        // Stop/reset possono interrompere una riproduzione ancora in attesa.
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setStartAudioError(true);
+        }
+      });
+    }
     // Avvia una riproduzione silenziosa nel click per abilitare l'audio.
     if (!audioRef.current) {
       const audio = new Audio(alarmSrc);
@@ -75,6 +97,7 @@ export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pas
 
   const stop = useCallback(() => {
     audioRef.current?.pause();
+    startAudioRef.current?.pause();
     if (status === "running") {
       setRemainingMs(endAtRef.current - Date.now());
     }
@@ -103,7 +126,7 @@ export function useCookingTimer(alarmSrc = `${import.meta.env.BASE_URL}audio/pas
     audio.play().then(() => setAudioError(false)).catch(() => setAudioError(true));
   }, [isRinging]);
 
-  return { remainingMs, status, isRinging, audioError, retryAlarm, start, stop, adjust, reset };
+  return { remainingMs, status, isRinging, audioError: audioError || startAudioError, retryAlarm, start, stop, adjust, reset };
 }
 
 export type CookingTimer = ReturnType<typeof useCookingTimer>;
