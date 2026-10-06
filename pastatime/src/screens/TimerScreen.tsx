@@ -20,7 +20,7 @@ interface TimerScreenProps {
 
 export default function TimerScreen({ product, timer, onDone, onDetails }: TimerScreenProps) {
   const [mode, setMode] = useState<CookingMode>("normal");
-  const { remainingMs, status, isRinging, start, stop, adjust, reset } = timer;
+  const { remainingMs, status, isRinging, audioError, retryAlarm, start, stop, adjust, reset } = timer;
   const running = status === "running";
 
   const handleModeChange = (next: CookingMode) => {
@@ -34,6 +34,14 @@ export default function TimerScreen({ product, timer, onDone, onDetails }: Timer
 
       <TimerDisplay remainingMs={remainingMs} isRinging={isRinging} />
 
+      {isRinging && <p role="status">La pasta è pronta! 🍝</p>}
+      {audioError && (
+        <p role="alert">
+          Audio non disponibile. Controlla i permessi audio del browser.
+          {isRinging && <button onClick={retryAlarm}>Attiva avviso sonoro</button>}
+        </p>
+      )}
+
       <CookingModeSelector value={mode} onChange={handleModeChange} disabled={running} />
 
       <div className="adjust">
@@ -43,7 +51,7 @@ export default function TimerScreen({ product, timer, onDone, onDetails }: Timer
 
       <div className="controls">
         {running ? (
-          <button onClick={stop}>Stop</button>
+          <button onClick={stop}>{isRinging ? "Ferma avviso" : "Stop"}</button>
         ) : (
           <button onClick={start}>Start</button>
         )}
