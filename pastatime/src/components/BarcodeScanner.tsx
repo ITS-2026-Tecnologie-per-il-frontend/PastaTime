@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import type { Product } from "../types";
+import { fetchPastaByCodebar, pastaToProduct } from "../services/pastaService";
 import "./BarcodeScanner.css";
 
-// Dati dimostrativi: non provengono da una lettura reale del codice.
+// Fallback dimostrativo, usato solo se pasta.json non è disponibile.
 const DEMO_PRODUCT: Product = {
   barcode: "DEMO-PASTA-001",
   name: "Spaghetti (demo)",
@@ -19,10 +20,23 @@ export default function BarcodeScanner({ onResult, onClose }: BarcodeScannerProp
 
   useEffect(() => {
     dialogRef.current?.showModal();
-    const timeout = window.setTimeout(() => onResult(DEMO_PRODUCT), 2000);
+    let cancelled = false;
+
+    // Simula la scansione: dopo 2s prende un record casuale da pasta.json.
+    const timeout = window.setTimeout(async () => {
+      try {
+        const record = await fetchPastaByCodebar("simulated");
+        if (!cancelled) onResult(pastaToProduct(record));
+      } catch {
+        if (!cancelled) onResult(DEMO_PRODUCT);
+      }
+    }, 2000);
 
     // Annulla anche la scansione in corso quando si chiude la finestra.
-    return () => window.clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [onResult]);
 
   return (
