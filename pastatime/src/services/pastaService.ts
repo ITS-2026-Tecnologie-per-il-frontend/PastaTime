@@ -1,5 +1,6 @@
 import { loadPasta, savePasta } from './storage';
 import type { PastaRecord } from '../types/pasta';
+import type { Product } from '../types';
 
 /**
  * Simula GET /pasta_time_api/pasta/by-codebar/:codebar
@@ -32,4 +33,16 @@ export async function fetchPastaByCodebar(
 
 export function getAllPasta(): PastaRecord[] {
     return loadPasta();
+}
+
+/** Converte un record del JSON nel `Product` usato dalle schermate. */
+export function pastaToProduct(record: PastaRecord): Product {
+    return {
+        barcode: record.codebar,
+        name: record.description,
+        cookingSeconds: record.cooking_time,
+        brand: record.brand,
+        extendedDescription: record.extended_description,
+        systemCode: record.system_code,
+    };
 }
