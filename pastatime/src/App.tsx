@@ -3,8 +3,9 @@
 // ─────────────────────────────────────────────────────────────
 
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useCookingTimer } from "./hooks/useCookingTimer";
+import { createAction, stopAction, voteAction } from "./services/actionService";
 import type { FeedbackValue, Product, Screen } from "./types";
 
 // Componenti delle due schermate principali dell'app.
@@ -66,6 +67,10 @@ export default function App() {
   // Il vantaggio è che lo stesso hook può essere testato isolatamente.
   const timer = useCookingTimer();
 
+  // ID dell'azione (cottura) in corso nel JSON "actions", oppure null.
+  // Ref e non stato: non serve ridisegnare l'interfaccia quando cambia.
+  const actionIdRef = useRef<number | null>(null);
+
   // ───────────────────────────────────────────────────────────
   // HANDLER: prodotto scansionato
   // ───────────────────────────────────────────────────────────
@@ -78,6 +83,9 @@ export default function App() {
   //   3. inizializzare il timer con i secondi di cottura del prodotto
   //   4. passare alla schermata 'timer'
   const handleScanned = (scanned: Product) => {
+    // Una nuova scansione chiude il discorso con l'eventuale cottura precedente.
+    actionIdRef.current = null;
+
     // 1. Imposta il prodotto corrente.
     //    Da questo momento TimerScreen (e il suo pannello dei dettagli) hanno i dati da mostrare.
     setProduct(scanned);
@@ -114,6 +122,24 @@ export default function App() {
   };
 
   // ───────────────────────────────────────────────────────────
+  // HANDLER: avvio del timer
+  // ───────────────────────────────────────────────────────────
+  // Alla prima pressione di Start registra l'inizio della cottura nel JSON
+  // "actions". Riavviare dopo uno Stop (pausa) non crea una nuova azione.
+  const handleStart = () => {
+    if (product && actionIdRef.current === null) {
+      const action = createAction({
+        codebar: product.barcode,
+        system_code: product.systemCode ?? "",
+        description: product.name,
+        total_time: Math.round(timer.remainingMs / 1000),
+      });
+      actionIdRef.current = action.ID;
+    }
+    timer.start();
+  };
+
+  // ───────────────────────────────────────────────────────────
   // HANDLER: cottura terminata (o terminata manualmente)
   // ───────────────────────────────────────────────────────────
   // Chiamato da TimerScreen quando:
@@ -128,6 +154,9 @@ export default function App() {
     // È idempotente: chiamarlo su un timer già fermo non deve causare problemi.
     timer.stop();
 
+    // Registra la fine della cottura (se il timer era stato avviato).
+    if (actionIdRef.current !== null) stopAction(actionIdRef.current);
+
     // Mostra la modale di feedback.
     // Nota: NON cambiamo schermata qui. La modale è un overlay sopra 'timer',
     // quindi l'utente vede ancora i dettagli dietro il modale.
@@ -141,6 +170,8 @@ export default function App() {
   // anche conteggio e allarme, quindi nulla continua in background.
   // Riaprendo il prodotto dalla cronologia, `handleScanned` riparte da qui.
   const handleExitToHome = () => {
+    // La cottura abbandonata resta nel JSON senza stop_time: non conta come conclusa.
+    actionIdRef.current = null;
     if (product) timer.reset(product.cookingSeconds);
     setScreen("home");
   };
@@ -152,20 +183,15 @@ export default function App() {
   // (pollice su, pollice giù, skip, ecc. — dipende da FeedbackValue).
   //
   // Responsabilità:
-  //   1. (futuro) persistere il feedback nel JSON "actions"
+  //   1. salvare il voto (+1 / -1) nell'azione in corso nel JSON "actions"
   //   2. chiudere la modale
   //   3. tornare alla schermata 'home'
   const handleFeedback = (value: FeedbackValue) => {
-    // Il parametro `value` è tipizzato FeedbackValue.
-    // Al momento non viene usato perché la persistenza è demandata
-    // a un'altra parte del sistema ("a cura del collega", come da commento).
-    //
-    // `void value;` è un'istruzione "no-op" il cui unico scopo è
-    // soddisfare il compilatore TypeScript quando `noUnusedParameters: true`:
-    // dice esplicitamente "sì, so che questo parametro non viene usato".
-    // In alternativa si potrebbe rinominare in `_value`, ma `void value` è
-    // più esplicito nel segnalare l'intenzione "non usato di proposito".
-    void value;
+    // positivo = +1, negativo = -1 (0 significa "nessun voto").
+    if (actionIdRef.current !== null) {
+      voteAction(actionIdRef.current, value === "positive" ? 1 : -1);
+      actionIdRef.current = null;
+    }
 
     // Chiude la modale.
     setShowFeedback(false);
@@ -221,6 +247,7 @@ export default function App() {
           timer={timer}
           onDone={handleDone}
           onExit={handleExitToHome}
+          onStart={handleStart}
         />
       )}
 

@@ -17,15 +17,17 @@ interface TimerScreenProps {
   product: Product;
   timer: CookingTimer;
   onDone: () => void;
+  /** Avvio del timer: App registra l'inizio della cottura e poi chiama timer.start. */
+  onStart: () => void;
   /** Chiamata dopo la conferma: App resetta il timer e torna alla home. */
   onExit: () => void;
 }
 
-export default function TimerScreen({ product, timer, onDone, onExit }: TimerScreenProps) {
+export default function TimerScreen({ product, timer, onDone, onExit, onStart }: TimerScreenProps) {
   const [mode, setMode] = useState<CookingMode>("normal");
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [confirmExit, setConfirmExit] = useState<boolean>(false);
-  const { remainingMs, status, isRinging, audioError, retryAlarm, start, stop, adjust, reset } = timer;
+  const { remainingMs, status, isRinging, audioError, retryAlarm, stop, adjust, reset } = timer;
   const running = status === "running";
 
   const handleModeChange = (next: CookingMode) => {
@@ -62,7 +64,7 @@ export default function TimerScreen({ product, timer, onDone, onExit }: TimerScr
         {running ? (
           <button onClick={stop}>{isRinging ? "Ferma avviso" : "Stop"}</button>
         ) : (
-          <button onClick={start}>Start</button>
+          <button onClick={onStart}>Start</button>
         )}
         <button onClick={onDone}>Done</button>
       </div>

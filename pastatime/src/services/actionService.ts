@@ -56,3 +56,19 @@ export function voteAction(
 export  function getAllActions(): ActionRecord[] {
     return loadActions();
 }
+
+/** Ultima cottura conclusa (con Done) per un codice a barre, oppure null. */
+export function getLastCompletedAction(codebar: string): ActionRecord | null {
+    const done = loadActions().filter(
+        (a) => a.codebar === codebar && a.stop_time !== null
+    );
+    if (done.length === 0) return null;
+    return done.reduce((last, a) => (a.ID > last.ID ? a : last));
+}
+
+/** Durata effettiva di una cottura conclusa, in secondi (stop - start). */
+export function actionDurationSeconds(action: ActionRecord): number {
+    if (action.stop_time === null) return 0;
+    const ms = Date.parse(action.stop_time) - Date.parse(action.start_time);
+    return Math.max(0, Math.round(ms / 1000));
+}
