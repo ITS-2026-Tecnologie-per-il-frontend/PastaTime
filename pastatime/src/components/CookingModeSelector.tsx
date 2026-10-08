@@ -1,4 +1,5 @@
 import type { CookingMode } from "../types";
+import { useTranslation } from "../context/LanguageContext";
 
 interface CookingModeSelectorProps {
   value: CookingMode;
@@ -6,10 +7,10 @@ interface CookingModeSelectorProps {
   disabled?: boolean;
 }
 
-const MODES: ReadonlyArray<{ id: CookingMode; label: string }> = [
-  { id: "al_dente", label: "Al dente" },
-  { id: "normal", label: "Normale" },
-  { id: "soft", label: "Morbida" },
+const MODES: ReadonlyArray<{ id: CookingMode; labelKey: string }> = [
+  { id: "al_dente", labelKey: "modes.alDente" },
+  { id: "normal", labelKey: "modes.normal" },
+  { id: "soft", labelKey: "modes.soft" },
 ];
 
 export default function CookingModeSelector({
@@ -17,8 +18,10 @@ export default function CookingModeSelector({
   onChange,
   disabled = false,
 }: CookingModeSelectorProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="mode-selector" role="radiogroup" aria-label="Cottura">
+    <div className="mode-selector" role="radiogroup" aria-label={t("labels.cooking")}>
       {MODES.map((m) => (
         <button
           key={m.id}
@@ -28,7 +31,7 @@ export default function CookingModeSelector({
           disabled={disabled}
           onClick={() => onChange(m.id)}
         >
-          {m.label}
+          {t(m.labelKey)}
         </button>
       ))}
     </div>

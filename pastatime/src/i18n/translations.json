@@ -362,5 +362,125 @@
         "zh": "秒",
         "ar": "ث",
         "ru": "сек"
+    },
+    "buttons.done": {
+        "it": "Fatto",
+        "en": "Done"
+    },
+    "buttons.details": {
+        "it": "Dettagli",
+        "en": "Details"
+    },
+    "buttons.hideDetails": {
+        "it": "Nascondi dettagli",
+        "en": "Hide details"
+    },
+    "buttons.stopAlarm": {
+        "it": "Ferma avviso",
+        "en": "Stop alarm"
+    },
+    "buttons.enableSound": {
+        "it": "Attiva avviso sonoro",
+        "en": "Enable sound alert"
+    },
+    "buttons.home": {
+        "it": "← Home",
+        "en": "← Home"
+    },
+    "buttons.cancel": {
+        "it": "Annulla",
+        "en": "Cancel"
+    },
+    "buttons.scanDemo": {
+        "it": "Simula scansione codice a barre",
+        "en": "Simulate barcode scan"
+    },
+    "buttons.backToHome": {
+        "it": "Torna alla home",
+        "en": "Back to home"
+    },
+    "buttons.stay": {
+        "it": "Resta qui",
+        "en": "Stay here"
+    },
+    "labels.barcode": {
+        "it": "Codice a barre",
+        "en": "Barcode"
+    },
+    "labels.systemCode": {
+        "it": "Codice di sistema",
+        "en": "System code"
+    },
+    "labels.productDetails": {
+        "it": "Dettagli del prodotto",
+        "en": "Product details"
+    },
+    "labels.recentScans": {
+        "it": "Ultime scansioni",
+        "en": "Recent scans"
+    },
+    "labels.noRecentScans": {
+        "it": "Nessuna scansione recente",
+        "en": "No recent scans"
+    },
+    "labels.lastCookDuration": {
+        "it": "Durata dell'ultima cottura",
+        "en": "Duration of the last cook"
+    },
+    "labels.feedbackPositive": {
+        "it": "Feedback positivo",
+        "en": "Positive feedback"
+    },
+    "labels.feedbackNegative": {
+        "it": "Feedback negativo",
+        "en": "Negative feedback"
+    },
+    "labels.cooking": {
+        "it": "Cottura",
+        "en": "Cooking"
+    },
+    "modes.alDente": {
+        "it": "Al dente",
+        "en": "Al dente"
+    },
+    "modes.normal": {
+        "it": "Normale",
+        "en": "Normal"
+    },
+    "modes.soft": {
+        "it": "Morbida",
+        "en": "Soft"
+    },
+    "feedback.title": {
+        "it": "Com'è venuta la pasta?",
+        "en": "How did the pasta turn out?"
+    },
+    "feedback.positive": {
+        "it": "Perfetta",
+        "en": "Perfect"
+    },
+    "feedback.negative": {
+        "it": "Non ci siamo",
+        "en": "Not quite"
+    },
+    "confirm.exitTitle": {
+        "it": "Tornare alla home?",
+        "en": "Back to home?"
+    },
+    "confirm.exitMessage": {
+        "it": "Il timer verrà azzerato e perderai il tempo trascorso.",
+        "en": "The timer will be reset and you will lose the elapsed time."
+    },
+    "messages.audioUnavailable": {
+        "it": "Audio non disponibile. Controlla i permessi audio del browser.",
+        "en": "Audio unavailable. Check your browser's audio permissions."
+    },
+    "scanner.demoTitle": {
+        "it": "Scansione demo",
+        "en": "Demo scan"
+    },
+    "scanner.demoDescription": {
+        "it": "Simulazione senza fotocamera con una pasta di esempio.",
+        "en": "Simulation without a camera, using a sample pasta."
     }
 }

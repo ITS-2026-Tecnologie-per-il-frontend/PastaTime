@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Product } from "../types";
+import { useTranslation } from "../context/LanguageContext";
 import ScreenHistory from "../components/ScreenHistory";
 import BarcodeScanner from "../components/BarcodeScanner";
 
@@ -9,16 +10,17 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ history, onScanned }: HomeScreenProps) {
+  const { t } = useTranslation();
   const [scanning, setScanning] = useState<boolean>(false);
 
   return (
     <main className="home">
-      <h1>Pasta Timer</h1>
+      <h1>{t("app.title")}</h1>
 
       <ScreenHistory items={history} onSelect={onScanned} />
 
       <button className="scan-btn" onClick={() => setScanning(true)}>
-        Simula scansione codice a barre
+        {t("buttons.scanDemo")}
       </button>
 
       {scanning && (

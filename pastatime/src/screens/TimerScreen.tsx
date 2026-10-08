@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CookingTimer } from "../hooks/useCookingTimer";
+import { useTranslation } from "../context/LanguageContext";
 import type { CookingMode, Product } from "../types";
 import TimerDisplay from "../components/TimerDisplay";
 import CookingModeSelector from "../components/CookingModeSelector";
@@ -24,6 +25,7 @@ interface TimerScreenProps {
 }
 
 export default function TimerScreen({ product, timer, onDone, onExit, onStart }: TimerScreenProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<CookingMode>("normal");
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [confirmExit, setConfirmExit] = useState<boolean>(false);
@@ -38,18 +40,18 @@ export default function TimerScreen({ product, timer, onDone, onExit, onStart }:
   return (
     <main className="timer-screen">
       <button className="back-btn" onClick={() => setConfirmExit(true)}>
-        ← Home
+        {t("buttons.home")}
       </button>
 
       <h2>{product.name}</h2>
 
       <TimerDisplay remainingMs={remainingMs} isRinging={isRinging} />
 
-      {isRinging && <p role="status">La pasta è pronta! 🍝</p>}
+      {isRinging && <p role="status">{t("messages.timerFinished")} 🍝</p>}
       {audioError && (
         <p role="alert">
-          Audio non disponibile. Controlla i permessi audio del browser.
-          {isRinging && <button onClick={retryAlarm}>Attiva avviso sonoro</button>}
+          {t("messages.audioUnavailable")}
+          {isRinging && <button onClick={retryAlarm}>{t("buttons.enableSound")}</button>}
         </p>
       )}
 
@@ -62,11 +64,11 @@ export default function TimerScreen({ product, timer, onDone, onExit, onStart }:
 
       <div className="controls">
         {running ? (
-          <button onClick={stop}>{isRinging ? "Ferma avviso" : "Stop"}</button>
+          <button onClick={stop}>{isRinging ? t("buttons.stopAlarm") : t("buttons.stop")}</button>
         ) : (
-          <button onClick={onStart}>Start</button>
+          <button onClick={onStart}>{t("buttons.start")}</button>
         )}
-        <button onClick={onDone}>Done</button>
+        <button onClick={onDone}>{t("buttons.done")}</button>
       </div>
 
       <button
@@ -75,17 +77,17 @@ export default function TimerScreen({ product, timer, onDone, onExit, onStart }:
         aria-expanded={showDetails}
         aria-controls="product-details"
       >
-        {showDetails ? "Nascondi details" : "Details"}
+        {showDetails ? t("buttons.hideDetails") : t("buttons.details")}
       </button>
 
       <DetailsPanel id="product-details" product={product} open={showDetails} />
 
       {confirmExit && (
         <ConfirmDialog
-          title="Tornare alla home?"
-          message="Il timer verrà azzerato e perderai il tempo trascorso."
-          confirmLabel="Torna alla home"
-          cancelLabel="Resta qui"
+          title={t("confirm.exitTitle")}
+          message={t("confirm.exitMessage")}
+          confirmLabel={t("buttons.backToHome")}
+          cancelLabel={t("buttons.stay")}
           onConfirm={onExit}
           onCancel={() => setConfirmExit(false)}
         />

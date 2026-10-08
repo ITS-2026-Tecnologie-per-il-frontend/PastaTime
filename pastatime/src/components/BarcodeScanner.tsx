@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Product } from "../types";
+import { useTranslation } from "../context/LanguageContext";
 import { fetchPastaByCodebar, pastaToProduct } from "../services/pastaService";
 import "./BarcodeScanner.css";
 
@@ -16,6 +17,7 @@ interface BarcodeScannerProps {
 }
 
 export default function BarcodeScanner({ onResult, onClose }: BarcodeScannerProps) {
+  const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -50,13 +52,13 @@ export default function BarcodeScanner({ onResult, onClose }: BarcodeScannerProp
         onClose();
       }}
     >
-      <h2 id="scanner-title">Scansione demo</h2>
-      <p id="scanner-description">Simulazione senza fotocamera con una pasta di esempio.</p>
+      <h2 id="scanner-title">{t("scanner.demoTitle")}</h2>
+      <p id="scanner-description">{t("scanner.demoDescription")}</p>
       <div className="scanner-barcode" aria-hidden="true">
         <span className="scanner-line" />
       </div>
-      <p role="status">Scansione del codice a barre in corso…</p>
-      <button type="button" onClick={onClose} autoFocus>Annulla</button>
+      <p role="status">{t("messages.scanning")}</p>
+      <button type="button" onClick={onClose} autoFocus>{t("buttons.cancel")}</button>
     </dialog>
   );
 }
