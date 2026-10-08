@@ -4,9 +4,10 @@
 
 
 import { useRef, useState } from "react";
+import { Navigate, Route, Routes, useNavigate } from "react-router";
 import { useCookingTimer } from "./hooks/useCookingTimer";
 import { createAction, stopAction, voteAction } from "./services/actionService";
-import type { FeedbackValue, Product, Screen } from "./types";
+import type { FeedbackValue, Product } from "./types";
 
 // Componenti delle due schermate principali dell'app.
 // Ogni schermata è un componente separato: App fa da "router" manuale.
@@ -33,12 +34,9 @@ const MAX_HISTORY = 10;
 // ─────────────────────────────────────────────────────────────
 
 export default function App() {
-  // ── STATO 1: schermata corrente ─────────────────────────────
-  // `screen` è una macchina a stati semplice: 'home' | 'timer'.
-  // Inizializzata a 'home': l'app parte sempre dalla schermata iniziale.
-  // Il tipo `Screen` (importato) garantisce che non si possano assegnare
-  // valori non previsti (typo, stringhe arbitrarie, ecc.).
-  const [screen, setScreen] = useState<Screen>("home");
+  // ── NAVIGAZIONE ─────────────────────────────────────────────
+  // Navigazione: la schermata corrente è decisa dall'URL ("/" e "/timer").
+  const navigate = useNavigate();
 
   // ── STATO 2: prodotto corrente ──────────────────────────────
   // `product` contiene i dati del prodotto scansionato attualmente "attivo".
@@ -55,7 +53,7 @@ export default function App() {
 
   // ── STATO 4: visibilità della modale di feedback ────────────
   // Boolean semplice: true = modale mostrata, false = nascosta.
-  // Separato da `screen` perché la modale è un overlay che può apparire
+  // Separato dalla rotta perché la modale è un overlay che può apparire
   // sopra qualsiasi schermata senza cambiare la schermata sottostante.
   const [showFeedback, setShowFeedback] = useState<boolean>(false);
 
@@ -116,9 +114,9 @@ export default function App() {
     //    sarebbe fuorviante e andrebbe rivisto (vedi note finali).
     timer.reset(scanned.cookingSeconds);
 
-    // 4. Cambia schermata: da 'home' a 'timer'.
+    // 4. Naviga verso la rotta '/timer'.
     //    Questo fa sì che il render successivo mostri TimerScreen.
-    setScreen("timer");
+    navigate("/timer");
   };
 
   // ───────────────────────────────────────────────────────────
@@ -173,7 +171,7 @@ export default function App() {
     // La cottura abbandonata resta nel JSON senza stop_time: non conta come conclusa.
     actionIdRef.current = null;
     if (product) timer.reset(product.cookingSeconds);
-    setScreen("home");
+    navigate("/");
   };
 
   // ───────────────────────────────────────────────────────────
@@ -185,7 +183,7 @@ export default function App() {
   // Responsabilità:
   //   1. salvare il voto (+1 / -1) nell'azione in corso nel JSON "actions"
   //   2. chiudere la modale
-  //   3. tornare alla schermata 'home'
+  //   3. tornare alla home ('/')
   const handleFeedback = (value: FeedbackValue) => {
     // positivo = +1, negativo = -1 (0 significa "nessun voto").
     if (actionIdRef.current !== null) {
@@ -201,58 +199,54 @@ export default function App() {
     // in futuro tornasse a 'timer' senza un nuovo scan, vedrebbe
     // ancora l'ultimo prodotto. Se questo non è desiderato, andrebbe fatto
     // `setProduct(null)` qui.
-    setScreen("home");
+    navigate("/");
   };
 
   // ───────────────────────────────────────────────────────────
   // RENDER
   // ───────────────────────────────────────────────────────────
-  // L'App è un "router manuale": renderizza UNO dei blocchi condizionali
-  // in base a `screen`, più eventualmente il modale di feedback sopra.
+  // L'URL decide quale schermata mostrare (`<Routes>`), più eventualmente
+  // il modale di feedback sopra.
   //
   // Perché un Fragment `<>...</>`?
   //   - Perché vogliamo restituire più elementi fratelli (le schermate + modale)
   //     senza aggiungere un <div> wrapper che spaccherebbe il layout.
   return (
     <>
-      {/* ── SCHERMATA HOME ──────────────────────────────────
-          Mostrata solo se `screen === 'home'`.
-          Riceve:
-            - history: la lista degli ultimi prodotti scansionati
-            - onScanned: callback chiamata quando lo scanner trova un prodotto
-          Il componente HomeScreen contiene la logica della fotocamera/scanner
-          e la UI della home. */}
-      {screen === "home" && (
-        <HomeScreen history={history} onScanned={handleScanned} />
-      )}
-
-      {/* ── SCHERMATA TIMER ─────────────────────────────────
-          Doppia condizione:
-            1. `screen === 'timer'` — l'utente è nella schermata timer
-            2. `product` non è null — c'è un prodotto da mostrare
-          Il secondo controllo è necessario perché TS non sa che se
-          `screen === 'timer'` allora `product` è sicuramente valorizzato.
-          È un "type guard" implicito: `product && ...` restringe il tipo
-          da `Product | null` a `Product` dentro il blocco JSX.
-
-          Riceve:
-            - product: i dati del prodotto corrente
-            - timer: l'oggetto hook del timer
-            - onDone: callback per fine cottura / stop manuale
-            I dettagli non passano da qui: li gestisce TimerScreen
-            con un pannello (DetailsPanel) che si apre e si chiude da solo. */}
-      {screen === "timer" && product && (
-        <TimerScreen
-          product={product}
-          timer={timer}
-          onDone={handleDone}
-          onExit={handleExitToHome}
-          onStart={handleStart}
+      {/* ── ROTTE ────────────────────────────────────────────
+          "/"       → HomeScreen (titolo, cronologia, scanner)
+          "/timer"  → TimerScreen; richiede un prodotto già scansionato.
+                      Se `product` è null (es. ricarica della pagina o URL
+                      digitato a mano) si torna alla home.
+          qualsiasi altro percorso → home.
+          I dettagli del prodotto non hanno una rotta: sono un pannello
+          dentro TimerScreen. */}
+      <Routes>
+        <Route
+          path="/"
+          element={<HomeScreen history={history} onScanned={handleScanned} />}
         />
-      )}
+        <Route
+          path="/timer"
+          element={
+            product ? (
+              <TimerScreen
+                product={product}
+                timer={timer}
+                onDone={handleDone}
+                onExit={handleExitToHome}
+                onStart={handleStart}
+              />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
       {/* ── MODALE FEEDBACK (overlay) ───────────────────────
-          Condizione indipendente dallo `screen`: la modale è un overlay
+          Condizione indipendente dalla rotta: la modale è un overlay
           che può apparire sopra qualsiasi schermata.
           Riceve:
             - onSelect: callback chiamata con il valore scelto
